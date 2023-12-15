@@ -1,102 +1,72 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { getDayIndexes } from "../Helpers/dayindexes";
+import { filterWeatherData } from "../Helpers/filterweatherdata";
 
 const Home = () => {
-  const [cityName, setCityName] = useState("");
-  const [coordinates, setCoordinates] = useState("");
-  const [isCityDisabled, setIsCityDisabled] = useState(false);
-  const [isCo_ordDisabled, setIsCo_ordDisabled] = useState(true);
-  const [weatherData, setWeatherdData] = useState([]);
+    const [cityName, setCityName] = useState("");
+    const [latitude, setLatitude] = useState("");
+    const [longitude, setLongitude] = useState("");
+    const [isCityDisabled, setIsCityDisabled] = useState(false);
+    const [isCo_ordDisabled, setIsCo_ordDisabled] = useState(true);
+    const [weatherData, setWeatherdData] = useState([]);
 
-  const handleSearch = async () => {
-    try {
-      const data = await axios.get(
-        "https://api.openweathermap.org/data/2.5/forecast?lat=20.0287732&lon=79.1231918&appid=e586fb1bf1f0206cdc114d49d84c8ec7"
-      );
+    const handleSearch = async () => {
+        try {
+            const data = await axios.get(
+                "https://api.openweathermap.org/data/2.5/forecast?lat=20.0287732&lon=79.1231918&appid=e586fb1bf1f0206cdc114d49d84c8ec7"
+            );
 
-      let dayIndexes = new Array(5);
-      if (data?.data?.list) {
-        let temp = data.data.list[1].dt_txt.slice(8, 10); //gets the date of first item.
-
-        //console.log("HIII", dayIndexes);
-        data.data.list.forEach((item, index) => {
-          if (temp == item.dt_txt.slice(8, 10)) {
-            if (item.dt_txt.slice(11, 13) === "12") {
-              dayIndexes.push(index);
-            }
-          } else {
-            temp = item.dt_txt.slice(8, 10);
-          }
-        });
-      }
-
-      // console.log(dayIndexes); //now it have the whether data that needs to be printed. fileter this out from main data and map that array.
-      // console.log(data);
-
-      let filteredDayData = data.data.list.filter((item, index) => {
-        for (let i = 5; i <= 9; i++) {
-          // console.log(index, dayIndexes[i]);
-          // console.log(index===dayIndexes[i])
-          let status = index === dayIndexes[i];
-          if (status) {
-            return item;
-          }
+            let dayIndexes = getDayIndexes(data);
+            let filteredWeatherData = filterWeatherData(data, dayIndexes);
+            setWeatherdData(filteredWeatherData);
+        } catch (error) {
+            console.log(error);
         }
-      });
-      setWeatherdData(filteredDayData);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    console.log(coordinates, cityName);
-  }, [coordinates, cityName]);
+    };
 
-  return (
-    <>
-      <main>
-        <h1>Weather Forecast</h1>
+    return (
+        <>
+            <main>
+                <h1>Weather Forecast</h1>
 
-        <section>
-          <div>
-            <input
-              placeholder="Enter City"
-              value={cityName}
-              onChange={(e) => setCityName(e.target.value)}
-            />{" "}
-            OR
-            <input
-              placeholder="Enter co-ordinates"
-              value={coordinates}
-              onChange={(e) => setCoordinates(e.target.value)}
-            />
-            <button onClick={handleSearch}>search</button>
-          </div>
-          <article className=" mt-20">
-           { weatherData.map((item, index)=>(<div className=" bg-stone-300 h-420 w-270 rounded-xl flex felx-row flex-wrap">
-              <div className="flex flex-col justify-center pt-10 pb-10 w-full">
-                <p className="text-3xl text-center mb-8">
-                  21<span>&#8451;</span>
-                </p>
-                <h1 className="mx-5"> Humidity </h1>
-                <h1 className="m-5">Wind Speed {item.wind.speed}</h1>
-                <h1></h1>
-              </div>
-              <div className="flex justify-center">
-                
-              </div>
-            </div>))}
-            <button
-                  className="bg-blue-300 p-1 rounded-md"
-                  onClick={handleSearch}
-                >
-                  More Info
-                </button>
-          </article>
-        </section>
-      </main>
-    </>
-  );
+                <section>
+                    <div>
+                        <input
+                            placeholder="Enter City"
+                            value={cityName}
+                            onChange={(e) => setCityName(e.target.value)}
+                        />{" "}
+                        OR
+                        <input
+                            placeholder="Enter co-ordinates"
+                            value={latitude}
+                            onChange={(e) => setCoordinates(e.target.value)}
+                        />
+                        <button onClick={handleSearch}>search</button>
+                    </div>
+                    <article className=" mt-20 flex flex-wrap space-x-4 space-y-6">
+                        {weatherData.map((item, index) => (
+                            <div className=" bg-stone-300 h-360 w-270 rounded-xl ">
+                                <div className="flex flex-col justify-center pt-10 pb-10 w-full">
+                                    <p className="text-3xl text-center mb-8">
+                                        21<span>&#8451;</span>
+                                    </p>
+                                    <h1 className="mx-5"> Humidity </h1>
+                                    <h1 className="m-5">Wind Speed {item.wind.speed}</h1>
+                                    <h1></h1>
+                                </div>
+                                <div className="flex justify-center"></div>
+                            </div>
+                        ))}
+                    </article>
+                    <button className="bg-blue-300 p-1 rounded-md" onClick={handleSearch}>
+                        More Info
+                    </button>
+                </section>
+            </main>
+        </>
+    );
 };
 
 export default Home;
