@@ -10,6 +10,9 @@ export default {
                 270: "270px",
             },
         },
+        fontFamily:{
+            rob:['Inter', 'sans-serif']
+        }
     },
     plugins: [],
 };
